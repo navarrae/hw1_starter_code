@@ -120,12 +120,10 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
 
         # TODO return the action that the policy prescribes
 
-        action = self.forward(ptu.from_numpy(observation).sample())
+        action = self.forward(ptu.from_numpy(observation))
 
 
-        return action
-
-        raise NotImplementedError
+        return ptu.to_numpy(action)
 
 
     def forward(self, observation: torch.FloatTensor) -> Any:
@@ -141,14 +139,20 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         # through it. For example, you can return a torch.FloatTensor. You can also
         # return more flexible objects, such as a
         # `torch.distributions.Distribution` object. It's up to you!
+
+        '''
         if self.discrete:
             action = F.softmax(self.logits_na(observation), dim=-1)
         else:
-            mean = self.mean_net(observation)
+            mean = self.mean_net(ptu.from_numpy(observation))
             std = torch.exp(self.logstd)
             action = distributions.Normal(mean, std).rsample()
-            
-        return action
+        '''
+        if self.discrete:
+            return distributions.categorical.Categorical(self.logits_na(observation)).sample()
+
+        return distributions.Normal(self.mean_net(observation), torch.exp(self.logstd)).rsample()
+        #return action
 
         raise NotImplementedError
 
@@ -167,7 +171,7 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             loss = F.cross_entropy(self.logits_na(observations), actions)
         else:
             actions = ptu.from_numpy(actions)
-            mean = self.mean_net(observations)
+            mean = self.mean_net(ptu.from_numpy(observations))
             std = torch.exp(self.logstd)
             dist = distributions.Normal(mean, std)
             loss = -dist.log_prob(actions).mean()

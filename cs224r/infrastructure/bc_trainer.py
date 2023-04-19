@@ -242,12 +242,12 @@ class BCTrainer:
             # HINT1: use the agent's sample function
             # HINT2: how much data = self.params['train_batch_size']
             ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch \
-                = self.agent.sample(self, self.params['train_batch_size'])
+                = self.agent.sample(self.params['train_batch_size'])
 
             # TODO use the sampled data to train an agent
             # HINT: use the agent's train function
             # HINT: keep the agent's training log for debugging
-            train_log = self.agent.train(self, ob_batch, ac_batch)
+            train_log = self.agent.train(ob_batch, ac_batch)
             all_logs.append(train_log)
 
         return all_logs
@@ -301,15 +301,13 @@ class BCTrainer:
                 eval_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
 
         #save train/eval videos
-        print('\nSaving rollouts as videos...')
-        if train_video_paths is not None:
+            print('\nSaving rollouts as videos...')
             self.logger.log_paths_as_videos(train_video_paths, itr,
-                fps=self.fps, max_videos_to_save=MAX_NVIDEO,
-                video_title='train_rollouts')
-        if eval_video_paths is not None:
+                    fps=self.fps, max_videos_to_save=MAX_NVIDEO,
+                    video_title='train_rollouts')
             self.logger.log_paths_as_videos(eval_video_paths, itr,
-                fps=self.fps,max_videos_to_save=MAX_NVIDEO,
-                video_title='eval_rollouts')
+                    fps=self.fps,max_videos_to_save=MAX_NVIDEO,
+                    video_title='eval_rollouts')
 
         # save eval metrics
         if self.log_metrics:
